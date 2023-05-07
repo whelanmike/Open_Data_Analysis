@@ -1,3 +1,4 @@
+#!/usr/bin/bash
 # Invalid character data in column 9, 17 of atp_matches_2023.csv
 # Backup original.
 cp atp_matches_2023.csv atp_matches_ORIG_2023.csv
