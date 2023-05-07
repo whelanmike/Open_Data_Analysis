@@ -15,6 +15,7 @@ select
 from tennis.atp_matches  
 
 
+
 create table tennis.atp_matches as
     select * from read_csv('C:\Users\michael.whelan\Downloads\sql_tutorial\tennis_atp\atp_matches_[0-9][0-9][0-9][0-9].csv' 
     ,header=True
@@ -85,7 +86,7 @@ create table tennis.atp_rankings as
     ,DATEFORMAT = '%Y%m%d'  -- ISO 8601
     ,columns={
              'ranking_date' : 'DATE'
-            ,'rank'         : 'INT'
+            ,'player_rank'  : 'INT'  -- rank reserver in SQL
             ,'player_id'    : 'INT'  -- Rename a column when loading
             ,'points'       : 'INT'
             }    
@@ -143,7 +144,7 @@ select count(1) from tennis.atp_rankings
 --1) Highest points ever
 select
        plr.name_first ||' '|| plr.name_last as player_name
-      ,rnk."rank"  
+      ,rnk.player_rank
       ,rnk.points 
       ,rnk.ranking_date 
 from  tennis.atp_rankings               rnk
@@ -153,23 +154,23 @@ WHERE 1=1
 order by 
       rnk.points desc
 limit 1
-
+;
 -- 2) All #1 Ranked players from most recent
 select 
        plr.name_first ||' '|| plr.name_last as player_name
       ,max(rnk.ranking_date)        as first_ranking_date 
-      ,rnk."rank"  
+      ,rnk.player_rank 
 from  tennis.atp_rankings               rnk
       inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
 WHERE 1=1
       and rnk.points is not null
-      and rnk."rank" = 1
+      and rnk.player_rank = 1
 group by 
        player_name
-      ,rnk."rank"  
+      ,rnk.player_rank
 order by 
       first_ranking_date desc
-
+;
 --3) List of #1 players 
 select distinct
        plr.name_first ||' '|| plr.name_last as player_name
@@ -177,12 +178,12 @@ from  tennis.atp_rankings               rnk
       inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
 WHERE 1=1
       and rnk.points is not null
-      and rnk."rank" = 1
-  
+      and rnk.player_rank = 1
+;  
 --4) Highest point rating by each player
 select 
        plr.name_first ||' '|| plr.name_last as player_name
-      ,max (rnk."rank")                     as player_rank
+      ,max (rnk.player_rank)                     as player_rank
       ,rnk.points 
       ,dense_rank() over (partition by rnk.player_id order by rnk.points  desc)  as rank_status
 from  tennis.atp_rankings               rnk
@@ -197,7 +198,7 @@ qualify
       rank_status = 1
 order by 
       rnk.points desc
-
+;
 --5)  Total time at the top
 with c_top_ranked as 
     (
@@ -205,16 +206,16 @@ with c_top_ranked as
            plr.name_first ||' '|| plr.name_last                  as player_name
           ,rnk.points 
           ,min(rnk.ranking_date)                                 as first_ranking_date 
-          ,rnk."rank"                                            as player_raking
+          ,rnk.player_rank                                       as player_rank
           ,dense_rank () over (order by first_ranking_date desc)  as row_num
     from  tennis.atp_rankings               rnk
           inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
     WHERE 1=1
           and rnk.points is not null
-          and player_raking = 1
+          and rnk.player_rank = 1
     group by 
            player_name
-          ,player_raking
+          ,rnk.player_rank
           ,rnk.points 
     )
     ,c_days_at_the_top as 
@@ -240,7 +241,7 @@ with c_top_ranked as
           total_days_at_top desc
 ;                
 
--- 5a) Duration at #1 position
+-- 5a) C #1 position
 -- All #1 Ranked players from most recent
 with c_top_ranked as 
     (
@@ -248,16 +249,16 @@ with c_top_ranked as
            plr.name_first ||' '|| plr.name_last                  as player_name
           ,rnk.points 
           ,min(rnk.ranking_date)                                 as first_ranking_date 
-          ,rnk."rank"                                            as player_raking
-          ,dense_rank () over (order by first_ranking_date desc)  as row_num
+          ,rnk.player_rank                                       as player_rank
+          ,dense_rank () over (order by first_ranking_date desc) as row_num
     from  tennis.atp_rankings               rnk
           inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
-    WHERE 1=1
+    where 1=1
           and rnk.points is not null
-          and player_raking = 1
+          and rnk.player_rank = 1
     group by 
            player_name
-          ,player_raking
+          ,rnk.player_rank
           ,rnk.points 
     )
     ,c_days_at_the_top as 
@@ -287,7 +288,7 @@ with c_top_ranked as
          ,min (first_ranking_date)   as begin_date
          ,max (first_ranking_date)   as end_date
          ,datediff ('week', (min (first_ranking_date)), (max (first_ranking_date)) ) as weeks_at_top
-         ,count (*)                  as row_count
+         ,count (*)                  as grp_count
     from  c_consecutive_groups   cgrp
     group by 
           cgrp.player_name
@@ -317,7 +318,7 @@ select
 from  tennis.atp_matches        mat
 where 1=1
       and mat.minutes > 0
-
+;
 --playing time summary
 select 
      minutes / 60                                           as hours_played
@@ -333,7 +334,7 @@ qualify
       (round (count(1) * 100.0 / sum( count(1)) over (), 2)) > 1.0
 order by 
       hours_played
-
+;
 
 --Five Number Summary      
 select distinct
@@ -345,7 +346,7 @@ select distinct
 from  tennis.atp_matches        mat
 where 1=1
       and mat.minutes > 0
-
+;
 --longest matches by seeded winners and losers      
 select 
        mat.tourney_id 
@@ -369,7 +370,7 @@ where 1=1
       and mat.minutes > 240
 order by 
       duration_mins desc
-
+;
 -- Most scoring
 select 
        mat.tourney_id 
@@ -397,7 +398,7 @@ where 1=1
                                     mat.score not like '%Played and unfinished%'
                               )
       and mat.score not like '%Played and unfinished%'
-
+;
 
 -- Most typical scores for hight ranked players
 select 
@@ -414,7 +415,7 @@ group by
       mat.score 
 order by 
       freq desc
-      
+;      
 -- Biggest shock outcomes
 select 
        mat.tourney_id 
@@ -437,3 +438,4 @@ where 1=1
       and mat.loser_seed is not null      
       and (mat.winner_seed - mat.loser_seed) > 20
       and mat.loser_seed < 10
+;
