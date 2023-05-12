@@ -1,20 +1,23 @@
+-- DuckDB version
 pragma version
 
       
--- 1) 
+-- Create a new schema for this data. 
 create schema tennis
+;
 
-
+-- Get a list of
+--      1) column names
+--      2) The data types inferred by the database. (These can be changed manually as we will see below)  
 describe 
     select * from read_csv_auto('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_matches_[0-9][0-9][0-9][0-9].csv', header=True)
 
 
-select 
-     * 
-from tennis.atp_matches  
 
-
-
+-- Create a table from the csv file
+-- Column names and data types are explicitly named here. Many changed from BIGINT to INT.
+--      using 'read_csv' here. Above we used 'read_csv_auto' to infer data types.
+--      Explicitly formatting any DATE field as 'YYYY-MM'DD'     
 create table tennis.atp_matches as
     select * from read_csv('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_matches_[0-9][0-9][0-9][0-9].csv' 
     ,header=True
@@ -73,9 +76,8 @@ create table tennis.atp_matches as
         )      
 
 select count(1) from tennis.atp_matches
--- Cross numbers check in Terminal
+-- Cross numbers check in Terminal using `wc -l` command
 
-drop table tennis.atp_rankings
 
 create table tennis.atp_rankings as
     select 
@@ -85,17 +87,13 @@ create table tennis.atp_rankings as
     ,DATEFORMAT = '%Y%m%d'  -- ISO 8601
     ,columns={
              'ranking_date' : 'DATE'
-            ,'player_rank'  : 'INT'  -- rank reserver in SQL
-            ,'player_id'    : 'INT'  -- Rename a column when loading
+            ,'player_rank'  : 'INT'  -- `RANK` is a reserved keyword in SQL
+            ,'player_id'    : 'INT'  -- Rename a column when loading (was `player`). keep consistent with other tables.
             ,'points'       : 'INT'
             }    
         )
 
-select * from tennis.atp_rankings
-
-drop table tennis.atp_players
---describe 
-
+-- 
 create table tennis.atp_players as
     select * from  read_csv('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_players.csv'
     , header=True
@@ -113,9 +111,9 @@ create table tennis.atp_players as
         }    
     )
 
-select * from tennis.atp_players
 
--- Player data: 103 dob with invalid dats format 
+-- Player data: 103 dob with invalid data format
+-- Note: this data in the source repo will probably get updated over time and these errors disappear. 
 select 
       *
 from  read_csv_auto('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_players.csv', header=True)
@@ -123,45 +121,39 @@ where right(dob,4) = '0000'
 ;
 
 
-
--- ERROR: Could not convert string 'Q' to INT64 at line 164 in column 
--- Note this is $9 in file.
-select *
---       left(tourney_id, 4)
---      ,count(tourney_id)
+-- Loading atp_matches data we run into an error.
+--      [ERROR: Could not convert string 'Q' to INT64 at line 164 in column] 
+--      Note this is $9 in csv file. In awk, the first column is $1 whereas DuckDB sees it as 0. 
+select 
+      *
 from  read_csv_auto('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_matches_[1-2][0-9][0-9][0-3].csv', header=True)
 using sample 100 rows
 
-
--- All data loaded
-select count(1) as row_count from tennis.atp_players 
-union
-select count(1) from tennis.atp_matches 
-union
-select count(1) from tennis.atp_rankings 
-
---1) Highest points ever
+-- =============================================================== Question Time =============================================================== 
+-- Questions we want to answer:- 
+--1) Highest points ever for a player.
 select distinct
-       plr.name_first ||' '|| plr.name_last as player_name
+       plr.name_first ||' '|| plr.name_last as player_name   -- Note: || is the concatenation operator
       ,rnk.player_rank
       ,rnk.points 
---      ,rnk.ranking_date 
 from  tennis.atp_rankings               rnk
       inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
-WHERE 1=1
+where 1=1
       and rnk.points is not null
 order by 
       rnk.points desc
-limit 3
+limit 1
 ;
+
 -- 2) All #1 Ranked players from most recent
+-- Take the first date on which they made #1 rank
 select 
        plr.name_first ||' '|| plr.name_last     as player_name
       ,max(rnk.ranking_date)                    as first_ranking_date 
       ,rnk.player_rank 
 from  tennis.atp_rankings               rnk
       inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
-WHERE 1=1
+where 1=1
       and rnk.points is not null
       and rnk.player_rank = 1
 group by 
@@ -170,25 +162,25 @@ group by
 order by 
       first_ranking_date desc
 ;
---3) List of #1 players 
+--3) Distinct List of #1 players 
 select distinct
        plr.name_first ||' '|| plr.name_last as player_name
 from  tennis.atp_rankings               rnk
       inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
-WHERE 1=1
+where 1=1
       and rnk.points is not null
       and rnk.player_rank = 1
 ;  
---4) Highest point rating by each player
-
+--4) Highest points rating for each player
+-- QUALIFY clause allows filtering on a Windowing function. 
 select 
-       plr.name_first ||' '|| plr.name_last as player_name
-      ,max (rnk.player_rank)                     as player_rank
+       plr.name_first ||' '|| plr.name_last     as player_name
+      ,max (rnk.player_rank)                    as player_rank
       ,rnk.points 
       ,dense_rank() over (partition by rnk.player_id order by rnk.points  desc)  as rank_status
 from  tennis.atp_rankings               rnk
       inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
-WHERE 1=1
+where 1=1
       and rnk.points is not null
 group by 
        player_name
@@ -199,7 +191,8 @@ qualify
 order by 
       rnk.points desc
 ;
---5)  Total time at the top
+
+--5)  Total time (days/weeks) at the top per player.
 with c_top_ranked as 
     (
     select 
@@ -207,10 +200,10 @@ with c_top_ranked as
           ,rnk.points 
           ,min(rnk.ranking_date)                                 as first_ranking_date 
           ,rnk.player_rank                                       as player_rank
-          ,dense_rank () over (order by first_ranking_date desc)  as row_num
+          ,dense_rank () over (order by first_ranking_date desc) as row_num
     from  tennis.atp_rankings               rnk
           inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
-    WHERE 1=1
+    where 1=1
           and rnk.points is not null
           and rnk.player_rank = 1
     group by 
@@ -241,8 +234,8 @@ with c_top_ranked as
           total_days_at_top desc
 ;                
 
--- 5a) C #1 position
--- All #1 Ranked players from most recent
+-- 5a) Most consecutive weeks at #1 position per player.
+--    
 with c_top_ranked as 
     (
     select 
@@ -319,24 +312,27 @@ from  tennis.atp_matches        mat
 where 1=1
       and mat.minutes > 0
 ;
---playing time summary
+-- 7) Playing time summary
 select 
      minutes / 30                                           as half_hours_played
     ,count(1)                                               as no_of_games
     ,round (count(1) * 100.0 / sum( count(1)) over (), 2)   as pct_of_matches
+--    ,sum(count(1)) over (order by NULL)                     as total_games
+    ,sum(count(1)) over (order by half_hours_played)        as no_of_games_cumulative
+    ,round (no_of_games_cumulative * 100.0/ ( sum(count(1)) over (order by NULL) ), 2) as running_pct
 from  tennis.atp_matches        mat
 where 1=1
       and minutes > 0
-group by --rollup (
+group by 
       (minutes / 30)
---      )
 qualify
-      (round (count(1) * 100.0 / sum( count(1)) over (), 2)) > 1.0
+      pct_of_matches > 1.0
 order by 
       half_hours_played
 ;
 
---Five Number Summary      
+-- 8) Five Number Summary      
+-- Data for Box Plot -- https://en.wikipedia.org/wiki/Box_plot 
 select distinct
        percentile_cont(0.00) within group (order  by mat.minutes) as min_mins
       ,percentile_cont(0.25) within group (order  by mat.minutes) as q1_mins
@@ -347,7 +343,8 @@ from  tennis.atp_matches        mat
 where 1=1
       and mat.minutes > 0
 ;
---longest matches by seeded winners and losers      
+-- 9) Longest matches by seeded winners and losers
+-- Limit to matches over 4 hours      
 select 
        mat.tourney_id 
       ,mat.tourney_name 
@@ -356,7 +353,6 @@ select
       ,plr_w.name_first || ' ' || plr_w.name_last as player_name_win
       ,mat.winner_seed 
       ,mat.winner_age 
---      ,mat.loser_id 
       ,plr_l.name_first || ' ' || plr_l.name_last as player_name_lose
       ,mat.loser_seed 
       ,mat.loser_age 
@@ -371,7 +367,9 @@ where 1=1
 order by 
       duration_mins desc
 ;
--- Most scoring
+--  10) Most scoring
+--      I've just taken the length of the `score` field here.
+--      I'm sure there's a better way. Not sure if the result here is correct.
 select 
        mat.tourney_id 
       ,mat.tourney_name 
@@ -380,7 +378,6 @@ select
       ,plr_w.name_first || ' ' || plr_w.name_last as player_name_win
       ,mat.winner_seed 
       ,mat.winner_age 
---      ,mat.loser_id 
       ,plr_l.name_first || ' ' || plr_l.name_last as player_name_lose
       ,mat.loser_seed 
       ,mat.loser_age 
@@ -390,17 +387,17 @@ from  tennis.atp_matches                mat
       inner join tennis.atp_players     plr_l on mat.loser_id  = plr_l.player_id 
 where 1=1
       and len (mat.score) =
-                              (
-                              select 
-                                    max(len(mat.score)) 
-                              from  tennis.atp_matches                mat
-                              where 
-                                    mat.score not like '%Played and unfinished%'
-                              )
+                           (
+                           select 
+                                 max(len(mat.score)) 
+                           from  tennis.atp_matches                mat
+                           where 
+                                 mat.score not like '%Played and unfinished%'
+                           )
       and mat.score not like '%Played and unfinished%'
 ;
 
--- Most typical scores for hight ranked players
+-- 11) Most typical scores for high ranked players.
 select 
        mat.score 
       ,count (mat.score)  as freq
@@ -416,7 +413,8 @@ group by
 order by 
       freq desc
 ;      
--- Biggest shock outcomes
+-- 12)  Biggest shock outcomes
+--      i.e winning player is ranked much lower than losing player.
 select 
        mat.tourney_id 
       ,mat.tourney_name 
@@ -425,7 +423,6 @@ select
       ,plr_w.name_first || ' ' || plr_w.name_last as player_name_win
       ,mat.winner_seed 
       ,mat.winner_age 
---      ,mat.loser_id 
       ,plr_l.name_first || ' ' || plr_l.name_last as player_name_lose
       ,mat.loser_seed 
       ,mat.loser_age 
