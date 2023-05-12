@@ -4,10 +4,9 @@ pragma version
 -- 1) 
 create schema tennis
 
-select * from tennis.atp_matches 
 
 describe 
-    select * from read_csv_auto('C:\Users\michael.whelan\Downloads\sql_tutorial\tennis_atp\atp_matches_[0-9][0-9][0-9][0-9].csv', header=True)
+    select * from read_csv_auto('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_matches_[0-9][0-9][0-9][0-9].csv', header=True)
 
 
 select 
@@ -17,7 +16,7 @@ from tennis.atp_matches
 
 
 create table tennis.atp_matches as
-    select * from read_csv('C:\Users\michael.whelan\Downloads\sql_tutorial\tennis_atp\atp_matches_[0-9][0-9][0-9][0-9].csv' 
+    select * from read_csv('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_matches_[0-9][0-9][0-9][0-9].csv' 
     ,header=True
     ,DATEFORMAT = '%Y%m%d'
     ,columns={
@@ -81,7 +80,7 @@ drop table tennis.atp_rankings
 create table tennis.atp_rankings as
     select 
            *
-    from  read_csv('C:\Users\michael.whelan\Downloads\sql_tutorial\tennis_atp\atp_rankings_*.csv'
+    from  read_csv('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_rankings_*.csv'
     ,header=True
     ,DATEFORMAT = '%Y%m%d'  -- ISO 8601
     ,columns={
@@ -98,7 +97,7 @@ drop table tennis.atp_players
 --describe 
 
 create table tennis.atp_players as
-    select * from  read_csv('C:\Users\michael.whelan\Downloads\sql_tutorial\tennis_atp\atp_players.csv'
+    select * from  read_csv('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_players.csv'
     , header=True
     ,DATEFORMAT = '%Y%m%d'
     ,IGNORE_ERRORS=True     -- See Query below. Ignore 103 players with invalid dob.
@@ -119,7 +118,7 @@ select * from tennis.atp_players
 -- Player data: 103 dob with invalid dats format 
 select 
       *
-from  read_csv_auto('C:\Users\michael.whelan\Downloads\sql_tutorial\tennis_atp\atp_players.csv', header=True)
+from  read_csv_auto('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_players.csv', header=True)
 where right(dob,4) = '0000'
 ;
 
@@ -130,7 +129,7 @@ where right(dob,4) = '0000'
 select *
 --       left(tourney_id, 4)
 --      ,count(tourney_id)
-from  read_csv_auto('C:\Users\michael.whelan\Downloads\sql_tutorial\tennis_atp\atp_matches_[1-2][0-9][0-9][0-3].csv', header=True)
+from  read_csv_auto('C:\Users\user.name\Downloads\sql_tutorial\tennis_atp\atp_matches_[1-2][0-9][0-9][0-3].csv', header=True)
 using sample 100 rows
 
 
@@ -142,23 +141,23 @@ union
 select count(1) from tennis.atp_rankings 
 
 --1) Highest points ever
-select
+select distinct
        plr.name_first ||' '|| plr.name_last as player_name
       ,rnk.player_rank
       ,rnk.points 
-      ,rnk.ranking_date 
+--      ,rnk.ranking_date 
 from  tennis.atp_rankings               rnk
       inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
 WHERE 1=1
       and rnk.points is not null
 order by 
       rnk.points desc
-limit 1
+limit 3
 ;
 -- 2) All #1 Ranked players from most recent
 select 
-       plr.name_first ||' '|| plr.name_last as player_name
-      ,max(rnk.ranking_date)        as first_ranking_date 
+       plr.name_first ||' '|| plr.name_last     as player_name
+      ,max(rnk.ranking_date)                    as first_ranking_date 
       ,rnk.player_rank 
 from  tennis.atp_rankings               rnk
       inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
@@ -181,6 +180,7 @@ WHERE 1=1
       and rnk.player_rank = 1
 ;  
 --4) Highest point rating by each player
+
 select 
        plr.name_first ||' '|| plr.name_last as player_name
       ,max (rnk.player_rank)                     as player_rank
@@ -321,19 +321,19 @@ where 1=1
 ;
 --playing time summary
 select 
-     minutes / 60                                           as hours_played
+     minutes / 30                                           as half_hours_played
     ,count(1)                                               as no_of_games
     ,round (count(1) * 100.0 / sum( count(1)) over (), 2)   as pct_of_matches
 from  tennis.atp_matches        mat
 where 1=1
       and minutes > 0
 group by --rollup (
-      (minutes / 60)
+      (minutes / 30)
 --      )
 qualify
       (round (count(1) * 100.0 / sum( count(1)) over (), 2)) > 1.0
 order by 
-      hours_played
+      half_hours_played
 ;
 
 --Five Number Summary      
