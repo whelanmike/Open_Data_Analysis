@@ -162,16 +162,8 @@ group by
 order by 
       first_ranking_date desc
 ;
---3) Distinct List of #1 players 
-select distinct
-       plr.name_first ||' '|| plr.name_last as player_name
-from  tennis.atp_rankings               rnk
-      inner join tennis.atp_players     plr on rnk.player_id = plr.player_id 
-where 1=1
-      and rnk.points is not null
-      and rnk.player_rank = 1
-;  
---4) Highest points rating for each player
+
+--3) Highest points rating for each player
 -- QUALIFY clause allows filtering on a Windowing function. 
 select 
        plr.name_first ||' '|| plr.name_last     as player_name
@@ -192,7 +184,7 @@ order by
       rnk.points desc
 ;
 
---5)  Total time (days/weeks) at the top per player.
+--4)  Total time (days/weeks) at the top per player.
 with c_top_ranked as 
     (
     select 
@@ -234,7 +226,7 @@ with c_top_ranked as
           total_days_at_top desc
 ;                
 
--- 5a) Most consecutive weeks at #1 position per player.
+-- 4a) Most consecutive weeks at #1 position per player.
 --    
 with c_top_ranked as 
     (
@@ -304,7 +296,7 @@ with c_top_ranked as
           consec_weeks_at_top desc
 ;
 
--- 6) longest and shortest matches
+-- 5) longest and shortest matches
 select 
        max (mat.minutes)  as longest_match_mins
       ,min (mat.minutes)  as shortest_match_mins
@@ -312,7 +304,7 @@ from  tennis.atp_matches        mat
 where 1=1
       and mat.minutes > 0
 ;
--- 7) Playing time summary
+-- 5a) Playing time summary
 select 
      minutes / 30                                           as half_hours_played
     ,count(1)                                               as no_of_games
@@ -331,7 +323,7 @@ order by
       half_hours_played
 ;
 
--- 8) Five Number Summary      
+-- 5b) Five Number Summary      
 -- Data for Box Plot -- https://en.wikipedia.org/wiki/Box_plot 
 select distinct
        percentile_cont(0.00) within group (order  by mat.minutes) as min_mins
@@ -343,7 +335,7 @@ from  tennis.atp_matches        mat
 where 1=1
       and mat.minutes > 0
 ;
--- 9) Longest matches by seeded winners and losers
+-- 6) Longest matches by seeded winners and losers
 -- Limit to matches over 4 hours      
 select 
        mat.tourney_id 
@@ -367,7 +359,7 @@ where 1=1
 order by 
       duration_mins desc
 ;
---  10) Most scoring
+--  7) Most scoring
 --      I've just taken the length of the `score` field here.
 --      I'm sure there's a better way. Not sure if the result here is correct.
 select 
@@ -397,7 +389,7 @@ where 1=1
       and mat.score not like '%Played and unfinished%'
 ;
 
--- 11) Most typical scores for high ranked players.
+-- 7a) Most typical scores for high ranked players.
 select 
        mat.score 
       ,count (mat.score)  as freq
@@ -413,7 +405,7 @@ group by
 order by 
       freq desc
 ;      
--- 12)  Biggest shock outcomes
+-- 8)  Biggest shock outcomes
 --      i.e winning player is ranked much lower than losing player.
 select 
        mat.tourney_id 
