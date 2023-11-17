@@ -99,6 +99,7 @@ create table tennis.atp_players as
     , header=True
     ,DATEFORMAT = '%Y%m%d'
     ,IGNORE_ERRORS=True     -- See Query below. Ignore 103 players with invalid dob.
+    ,rejects_table='csv_atp_player_rejects_table'  -- Option in duckdb v0.91
     ,columns={
              'player_id'     : 'INT'
             ,'name_first'    : 'VARCHAR'
