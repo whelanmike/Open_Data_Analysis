@@ -1,0 +1,23 @@
+# Note that newer files are zip format. Before 2017 format is .gz
+
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2023.zip --output ./dft_test_result_2023.zip && unzip dft_test_result_2023.zip && rm dft_test_result_2023.zip
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2022.zip --output ./dft_test_result_2022.zip && unzip dft_test_result_2022.zip && rm dft_test_result_2022.zip
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2021.zip --output ./dft_test_result_2021.zip && unzip dft_test_result_2021.zip && rm dft_test_result_2021.zip
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2020.zip --output ./dft_test_result_2020.zip && unzip dft_test_result_2020.zip && rm dft_test_result_2020.zip
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2019.zip --output ./dft_test_result_2019.zip && unzip dft_test_result_2019.zip && rm dft_test_result_2019.zip
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2018.zip --output ./dft_test_result_2018.zip && unzip dft_test_result_2018.zip && rm dft_test_result_2018.zip
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2017.zip --output ./dft_test_result_2017.zip && unzip dft_test_result_2017.zip && rm dft_test_result_2017.zip
+
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2016.txt.gz --output ./dft_test_result_2016.gz && gunzip dft_test_result_2016.gz && mv ./dft_test_result_2016 ./dft_test_result_2016.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2015.txt.gz --output ./dft_test_result_2015.gz && gunzip dft_test_result_2015.gz && mv ./dft_test_result_2015 ./dft_test_result_2015.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2014.txt.gz --output ./dft_test_result_2014.gz && gunzip dft_test_result_2014.gz && mv ./dft_test_result_2014 ./dft_test_result_2014.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2013.txt.gz --output ./dft_test_result_2013.gz && gunzip dft_test_result_2013.gz && mv ./dft_test_result_2013 ./dft_test_result_2013.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2012.txt.gz --output ./dft_test_result_2012.gz && gunzip dft_test_result_2012.gz && mv ./dft_test_result_2012 ./dft_test_result_2012.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2011.txt.gz --output ./dft_test_result_2011.gz && gunzip dft_test_result_2011.gz && mv ./dft_test_result_2011 ./dft_test_result_2011.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2010.txt.gz --output ./dft_test_result_2010.gz && gunzip dft_test_result_2010.gz && mv ./dft_test_result_2010 ./dft_test_result_2010.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2009.txt.gz --output ./dft_test_result_2009.gz && gunzip dft_test_result_2009.gz && mv ./dft_test_result_2009 ./dft_test_result_2009.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2008.txt.gz --output ./dft_test_result_2008.gz && gunzip dft_test_result_2008.gz && mv ./dft_test_result_2008 ./dft_test_result_2008.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2007.txt.gz --output ./dft_test_result_2007.gz && gunzip dft_test_result_2007.gz && mv ./dft_test_result_2007 ./dft_test_result_2007.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2006.txt.gz --output ./dft_test_result_2006.gz && gunzip dft_test_result_2006.gz && mv ./dft_test_result_2006 ./dft_test_result_2006.csv
+curl https://data.dft.gov.uk/anonymised-mot-test/test_data/test_result_2005.txt.gz --output ./dft_test_result_2005.gz && gunzip dft_test_result_2005.gz && mv ./dft_test_result_2005 ./dft_test_result_2005.csv
+
