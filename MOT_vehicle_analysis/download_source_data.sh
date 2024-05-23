@@ -130,6 +130,11 @@ mv dft_test_result-from-2020-07_NL.csv  comma_dft_test_result-from-2020-07_NL.cs
 mv dft_test_result-from-2020-10_NL.csv  comma_dft_test_result-from-2020-10_NL.csv
 
 
+# Validate data:- should be 14 Fields per record in csv file. 
+# e.g. this file is pipe delimited. Write good and bad data to separate files. For bad data get NR (row number) for investigation. 
+gawk -F'|' '{if (NF==14) print $0 > "good_file.csv"; else print "["NR"]", "["NF"]", $0 > "bad_file.csv"}'  dft_test_result_2016.csv
+
+
 create table mot.test_data  as
 select 
        test_id          
