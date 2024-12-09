@@ -1,0 +1,18 @@
+class_id;vehicle_type
+1;Motorcycles, with or without side cars (engine size up to 200cc)
+2;Motorcycles, with or without side cars (engine size over 200cc)
+3;3-wheel vehicles (up to 450kg unladen weight)
+4;"3-wheeled vehicles (over 450kg unladen weight)
+Cars (up to 8 passenger seats)
+Motor caravans
+Quads (max unladen weight 400kg – for goods vehicles and max net power of 15kb)
+Dual purpose vehicles
+Private hire and public service vehicles (up to 8 seats)
+Ambulances and taxis
+Private passenger vehicles and ambulances (9-12 passenger seats)
+Goods vehicles (up to 3,000kg design gross weight)"
+4a;Class 4 vehicles (9-12 passenger seats) with a seat belt installation check
+5;"Private passenger vehicles and ambulances (13-16 passenger seats, and more than 16 passenger seats)
+Play buses"
+5a;Class 5 vehicles (13-16 passenger seats, and more than 16 passenger seats) with a seatbelt installation check
+7;Goods vehicles (over 3,000kg up to 3,500kg design gross weight)
