@@ -1,4 +1,4 @@
--- Requires duckDB version v1.4.1 or later. (Oct 2025)
+-- Requires duckDB version v1.4.1 or later.
 -- This version gets the (i) column names, (ii) data types and the (iii) delimiter from the csv_sniffer.
 -- BEWARE of the consequences of 'store_rejects' setting. https://duckdb.org/docs/stable/data/csv/reading_faulty_csv_files#reject-errors
 /*
