@@ -62,7 +62,7 @@ create or replace macro generate_table_from_csv_normalize_cols(csv_file_name) as
         union all            
         select '              --,DATEFORMAT = ''' || '%m/%d/%Y' || ''''  || '             -- Convert Dates to ISO-8601 format.' 
         union all            
-        select '              ,header = True' || '                         -- comment out if no field names in file. Required names & types can be added below in columns section.'
+        select '              ,header = True' || '                         -- comment out if no field names in file. Required names & types can be added in columns section of generated SQL.'
         union all            
         select '              ,store_rejects = True' || '                  -- select * from reject_errors;'
         union all            
