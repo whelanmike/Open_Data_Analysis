@@ -2,7 +2,7 @@
 -- This version gets the (i) column names, (ii) data types and the (iii) delimiter from the csv_sniffer.
 -- BEWARE of the consequences of 'store_rejects' setting. https://duckdb.org/docs/stable/data/csv/reading_faulty_csv_files#reject-errors
 /*
-  Use as follows:-
+  After creating the MACRO below, Use as follows:-
   1) 
   -- set file_search_path = '/path_to_csv_file_directory'
   select 
