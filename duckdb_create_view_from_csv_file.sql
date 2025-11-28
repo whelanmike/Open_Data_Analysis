@@ -35,13 +35,13 @@ create or replace macro generate_table_from_csv_normalize_cols(csv_file_name) as
         ,c_col_metadata as
         (
         select 
-               format('{:02d}', row_number() over())                                      as col_id
-              ,name                                                                       as column_name
-              ,regexp_replace(name       , '([a-z0-9])([A-Z])', '\1_\2', 'g').lower()     as col_name_normalized
-              ,len(name       )                                                           as col_len
-              ,max(col_len) over()                                                        as mx_len
-              ,repeat(' ', (mx_len - col_len) + 3)                                        as spacing
-              ,type                                                                       as column_type
+               format('{:02d}', row_number() over())                               as col_id
+              ,name                                                                as column_name
+              ,regexp_replace(name, '([a-z0-9])([A-Z])', '\1_\2', 'g').lower()     as col_name_normalized
+              ,len(name)                                                           as col_len
+              ,max(col_len) over()                                                 as mx_len
+              ,repeat(' ', (mx_len - col_len) + 3)                                 as spacing
+              ,type                                                                as column_type
         from  c_table_metadata
         )
         select 'create or replace view v_' || lower(replace(csv_file_name, '.csv', '')) ||  ' as  -- **** RENAME AS REQUIRED ****' as definition
