@@ -1,5 +1,8 @@
 -- Requires duckDB version v1.4.1 or later.
--- This version gets the (i) column names, (ii) data types and the (iii) delimiter from the csv_sniffer.
+-- This version gets the following information from the csv_sniffer (Also works for .gz files)
+--       (i) column names
+--      (ii) data types
+--     (iii) delimiter
 -- BEWARE of the consequences of 'store_rejects' setting. https://duckdb.org/docs/stable/data/csv/reading_faulty_csv_files#reject-errors
 /*
   After creating the MACRO below, Use as follows:-
