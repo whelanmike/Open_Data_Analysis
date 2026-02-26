@@ -18,6 +18,7 @@
   - Search/Replace '--:' to use the normalised column names, e.g. ColumnName --> column_name.
   - ** 'store_rejects' option can mask errors. It's useful for debugging. Execute `select * from reject_errors` after running view.
   3) See duckdb_csv_MACRO_example.png in repo.
+      https://github.com/whelanmike/Open_Data_Analysis/blob/main/duckdb_csv_MACRO_example.png
 */
 
 create or replace macro generate_table_from_csv_normalize_cols(csv_file_name) as table
