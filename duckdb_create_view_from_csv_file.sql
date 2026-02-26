@@ -17,6 +17,7 @@
   - Review all column names and data types.
   - Search/Replace '--:' to use the normalised column names, e.g. ColumnName --> column_name.
   - ** 'store_rejects' option can mask errors. It's useful for debugging. Execute `select * from reject_errors` after running view.
+  3) See duckdb_csv_MACRO_example.png in repo.
 */
 
 create or replace macro generate_table_from_csv_normalize_cols(csv_file_name) as table
@@ -60,7 +61,7 @@ create or replace macro generate_table_from_csv_normalize_cols(csv_file_name) as
         union all select '              --,quote=''"' || '''' || '                           -- Include if csv data is quoted.'
         union all select '              --,DATEFORMAT = ''' || '%m/%d/%Y' || ''''  || '             -- Convert Dates to ISO-8601 format.' 
         union all select '              ,header = True' || '                         -- comment out if no field names in file. Required names & types can be added in columns section of generated SQL.'
-        union all select '              ,store_rejects = True' || '                  -- union all select * from reject_errors;'
+        union all select '              ,store_rejects = True' || '                  -- select * from reject_errors;'
         union all select '              --,ignore_errors=True' || '                  -- Mutually Exclusive with store_rejects option.'
         union all select '              --,nullstr=''NA'''  || '                        -- Use to convert string to null e.g. N\A, NA, etc.'
         union all select '              ,columns = ' || '                            -- Data types are not always inferred correctly. Validate column list below. '
