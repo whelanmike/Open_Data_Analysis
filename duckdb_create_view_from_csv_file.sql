@@ -56,7 +56,7 @@ create or replace macro generate_table_from_csv_normalize_cols(csv_file_name) as
         union all select 
                         case when col_id =1 then '           ' else '          ,' end   || (column_name) || spacing ||  '--: as '  || lower(col_name_normalized) 
                   from  c_col_metadata
-        union all select '          ,''' || csv_file_name || ''' as data_source'
+        union all select  '          ,data_source'  || spacing || '''' || csv_file_name || ''' '  from  (select distinct repeat(' ', (mx_len) - 6) || ': '  as  spacing from c_col_metadata)
         union all select '    from  read_csv'
         union all select '              (''' ||  csv_file_name || '''' 
         union all select '              ,sep='  || '''' ||  concat(delimiter, '''                               -- Using sniffed value of delimiter.') from c_delim 
@@ -66,11 +66,11 @@ create or replace macro generate_table_from_csv_normalize_cols(csv_file_name) as
         union all select '              --,store_rejects = True' || '                  -- select * from reject_errors;'
         union all select '              --,ignore_errors=True' || '                  -- Mutually Exclusive with store_rejects option.'
         union all select '              --,nullstr=''NA'''  || '                        -- Use to convert string to null e.g. N\A, NA, etc.'
-        union all select '              ,columns = ' || '                            -- Data types are not always inferred correctly. Validate column list below. '
+        union all select '              ,columns = ' || '                            -- Data types are not always inferred correctly. Review and validate column list below. '
         union all select '                  { '       
         union all select 
                         case when col_id =1 then '                   ' else '                  ,' end   ||  ''''  || (column_name) || '''' 
-                        || spacing || ':''' || data_type || ''''  || repeat(' ', 12-len(data_type)) || '-- (' || col_id || ')'
+                        || spacing || ':''' || data_type || ''''  || repeat(' ', 25-len(data_type)) || '-- (' || col_id || ')'
                         as output
                   from  c_col_metadata
         union all select '                  } '       
