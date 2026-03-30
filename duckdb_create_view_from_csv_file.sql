@@ -32,7 +32,7 @@ create or replace macro generate_table_from_csv_normalize_cols(csv_file_name) as
               select 
                      delimiter
                     ,UNNEST (columns)     as col_name_and_type
-              FROM  sniff_csv(csv_file_name, sample_size = 1000)
+              from  sniff_csv(csv_file_name, sample_size = 1000)
               ) 
         )
         ,c_delim as 
