@@ -30,7 +30,7 @@ create or replace macro export_csv_to_parquet(csv_file_name) as table
               ,data_type                                                                
         from  c_table_metadata
         )
-                  select 'copy ('
+                  select 'copy ('           as sql_script
         union all select '    select '
         union all select 
                         case when col_id =1 then '           ' else '          ,' end   || (column_name) || spacing ||  '--: as '  || lower(col_name_normalized) 
