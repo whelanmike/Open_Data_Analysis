@@ -1,0 +1,68 @@
+To track state transitions using graph queries in DuckDB, you can leverage the **DuckPGQ** community extension.
+
+In a graph context, your table records act as **nodes** (states), and the sequence of time moving from one state to the next acts as **edges** (transitions).
+
+Here is how you can set up the property graph and execute a SQL/PGQ path-finding query to count the number of transitions (hops) before hitting `Scheduled_Maintenance`.
+
+### Step 1: Initialize DuckPGQ and Create the Property Graph
+
+First, ensure the table has a unique identifier for its records (you can use an automatic `ROWID` or add an explicit ID), and then build a graph view over it where an edge connects a row to the row that immediately follows it in time.
+
+```sql
+-- 1. Install and load the graph extension
+INSTALL duckpgq;
+LOAD duckpgq;
+
+-- 2. Materialize your timeline table with an explicit identifier
+CREATE TABLE machine_states AS 
+SELECT 
+    row_number() OVER (ORDER BY start_timestamp) AS state_id,
+    start_timestamp,
+    end_timestamp,
+    state_code
+FROM machine_timeline; -- Assuming the previous timeline table name
+
+-- 3. Define the Property Graph
+CREATE PROPERTY GRAPH machine_graph
+VERTEX TABLES ( 
+    machine_states 
+    KEY (state_id) 
+    LABEL State
+)
+EDGE TABLES (
+    -- Connect a state to the next consecutive chronological state
+    machine_states
+    KEY (state_id)
+    SOURCE KEY (state_id) REFERENCES machine_states(state_id)
+    DESTINATION KEY (state_id + 1) REFERENCES machine_states(state_id)
+    LABEL TRANSITION_TO
+);
+
+```
+
+### Step 2: Query Hop Counts with SQL/PGQ
+
+Using DuckPGQ's variable-length path-finding syntax (`-+`), we can match the shortest path from any non-maintenance state to a `Scheduled_Maintenance` state and count the number of edges (transitions) via `path_length()`.
+
+```sql
+SELECT 
+    start_state,
+    target_state,
+    transitions_count - 1 AS intermediate_transitions
+FROM GRAPH_TABLE (machine_graph
+    MATCH p = ANY SHORTEST (a:State)-[e:TRANSITION_TO]->+(b:State WHERE b.state_code = 'Scheduled_Maintenance')
+    -- Filter to only look at segments where it wasn't already in maintenance
+    WHERE a.state_code != 'Scheduled_Maintenance'
+    COLUMNS (
+        a.state_code AS start_state,
+        b.state_code AS target_state,
+        path_length(p) AS transitions_count
+    )
+);
+
+```
+
+### How this works:
+
+* **`-[e:TRANSITION_TO]->+`**: The `+` operator represents an unbounded transitive path (1 or more hops). DuckPGQ calculates the shortest sequential path along your chronological state timeline.
+* **`path_length(p)`**: This built-in DuckPGQ function extracts the exact number of edges traversed in the path. If you want the number of *states passed through* before hitting maintenance, subtracting 1 from the total path length yields the correct count.
