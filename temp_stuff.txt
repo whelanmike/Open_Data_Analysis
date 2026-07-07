@@ -20,3 +20,54 @@ sudo apt update
 # Install Docker Engine and Compose
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+mqtt:
+  enabled: false # Set to true later if integrating with Home Assistant via MQTT
+
+detectors:
+  ov:
+    type: openvino
+    device: GPU # Uses your Intel UHD 630 iGPU for object detection
+
+cameras:
+  my_front_door_camera: # Rename to whatever you like
+    ffmpeg:
+      inputs:
+        - path: rtsp://admin:password@111.222.33.44:554/stream1 # Your RTSP camera URL
+          roles:
+            - detect
+            - record
+      hwaccel_args: preset-vaapi # Leverages Intel QuickSync/VA-API decoding
+    detect:
+      enabled: true
+    record:
+      enabled: true
+
+-- =================================================== 
+Docker Compose file
+
+
+services:
+  frigate:
+    container_name: frigate
+    privileged: false # Keep it secure
+    restart: unless-stopped
+    image: ghcr.io/blakeblackshear/frigate:stable
+    shm_size: "128mb" # Adjust upward if you have many 4K cameras
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128 # Passes the Intel GPU into the container
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/frigate/config:/config
+      - ~/frigate/storage:/media/frigate
+      - type: tmpfs # Uses RAM for cache to prevent ruining your SSD with constant writes
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+    ports:
+      - "8971:8971" # Web UI (HTTPS)
+      - "8554:8554" # RTSP feeds (Optional)
+      - "8555:8555/tcp" # WebRTC
+      - "8555:8555/udp" # WebRTC
+
+
+
